@@ -43,34 +43,53 @@ class Administrer
 		$this->debug = true;
 	}
 
-    private function fetch_url(String $ajout) {
+    private function fetch_url(string $ajout): array {
         $url = self::URL_BASE . $ajout;
-		$curl = curl_init($url);
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => "Accept: application/json\r\n",
+                'timeout' => 10,
+                'ignore_errors' => true,
+            ],
+        ]);
 
-		if ($curl === false) {
-			throw new RuntimeException('Impossible d’initialiser cURL.');
-		}
+        $streamError = null;
+        set_error_handler(static function (int $severity, string $message) use (&$streamError): bool {
+            $streamError = $message;
+            return true;
+        }, E_WARNING);
 
-		curl_setopt_array($curl, [
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_HTTPHEADER => ['Accept: application/json'],
-			CURLOPT_TIMEOUT => 10,
-		]);
+        try {
+            $response = file_get_contents($url, false, $context);
+        } finally {
+            restore_error_handler();
+        }
 
-		$response = curl_exec($curl);
+        if ($response === false) {
+            throw new RuntimeException(
+                'Impossible de récupérer les données de l’API.' .
+                ($streamError !== null ? ' ' . $streamError : '')
+            );
+        }
 
-		if ($response === false) {
-			$error = curl_error($curl);
-			throw new RuntimeException('Erreur lors de l’appel à l’API : ' . $error);
-		}
-		
-		$status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $status = null;
+        foreach ($http_response_header ?? [] as $header) {
+            if (preg_match('/^HTTP\/\S+\s+(\d{3})\b/i', $header, $matches)) {
+                $status = (int) $matches[1];
+            }
+        }
 
-		if ($status < 200 || $status >= 300) {
-			throw new RuntimeException("L’API a répondu avec le statut HTTP $status.");
-		}
+        if ($status === null || $status < 200 || $status >= 300) {
+            throw new RuntimeException(
+                'L’API a répondu avec le statut HTTP ' . ($status ?? 'inconnu') . '.'
+            );
+        }
 
-		return json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        $data = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        
+
+        return $data;
     }
 
 	public function getListeMentions() {
