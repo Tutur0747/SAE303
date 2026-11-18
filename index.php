@@ -31,6 +31,11 @@ $administrer = new Administrer(MYHOST, MYDB, MYUSER, MYPASS);
             echo "<p>" . $mention["nom"] . "</p> <br>";
         }
 
+        $liste_etablissements = $administrer->getListeEtablissements();
+        foreach ($liste_etablissements as $etablissements) {
+            echo "<p>" . $etablissements["nom"] . "</p> <br>";
+        }
+
         ?>
     </div>
 </body>

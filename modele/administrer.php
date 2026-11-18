@@ -95,4 +95,8 @@ class Administrer
 	public function getListeMentions() {
 		return $this->fetch_url("/api/rest/mentions");
 	}
+
+	public function getListeEtablissements () {
+		return $this->fetch_url("/api/rest/etablissements");
+	}
 }
