@@ -45,16 +45,20 @@ class Administrer
 		$this->debug = true;
 	}
 
-    private function fetch_url(string $ajout): array {
+    private function fetch_url(string $ajout, ?array $json = null): array {
         $url = self::URL_BASE . $ajout;
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'GET',
-                'header' => "Accept: application/json\r\n",
-                'timeout' => 10,
-                'ignore_errors' => true,
-            ],
-        ]);
+        $headers = ['Accept: application/json'];
+        $httpOptions = [
+            'method' => $json === null ? 'GET' : 'POST',
+            'timeout' => 10,
+            'ignore_errors' => true,
+        ];
+        if ($json !== null) {
+            $headers[] = 'Content-Type: application/json';
+            $httpOptions['content'] = json_encode($json, JSON_THROW_ON_ERROR);
+        }
+        $httpOptions['header'] = implode("\r\n", $headers) . "\r\n";
+        $context = stream_context_create(['http' => $httpOptions]);
 
         $streamError = null;
         set_error_handler(static function (int $severity, string $message) use (&$streamError): bool {
@@ -89,7 +93,9 @@ class Administrer
         }
 
         $data = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-        
+        if (!is_array($data)) {
+            throw new UnexpectedValueException('La réponse de l’API doit être un objet ou un tableau JSON.');
+        }
 
         return $data;
     }
@@ -121,8 +127,38 @@ class Administrer
     }
 
     public function getFormationById(String $ifc) {
-        return $this->fetch_url("/api/rest/formations/" . $ifc . "?full-details=1");
+        return $this->fetch_url("/api/rest/formations/" . rawurlencode($ifc) . "?full-details=1");
     }
 
+    public function getNbCan(string $formationIfc, int $annee): ?int {
+        $response = $this->fetch_url('/api/rest/stats/search', [
+            'filters' => [
+                'formationIfcs' => [$formationIfc],
+                'annees' => $annee,
+            ],
+            'harvest' => [
+                'typeStats' => 'candidatures',
+                'candidatureDetails' => 'general',
+            ],
+        ]);
+
+        if (!isset($response['candidatures']) || !is_array($response['candidatures'])) {
+            throw new UnexpectedValueException('La réponse de l’API ne contient pas la liste des candidatures.');
+        }
+        if ($response['candidatures'] === []) {
+            return null;
+        }
+
+        $total = 0;
+        foreach ($response['candidatures'] as $candidature) {
+            $nb = $candidature['general']['nb'] ?? null;
+            if (!is_numeric($nb)) {
+                throw new UnexpectedValueException('Une statistique de candidature ne contient pas de nombre valide.');
+            }
+            $total += (int) $nb;
+        }
+
+        return $total;
+    }
 
 }
