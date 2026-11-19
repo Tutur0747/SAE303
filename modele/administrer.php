@@ -120,5 +120,9 @@ class Administrer
         return null;
     }
 
-    
+    public function getFormationById(String $ifc) {
+        return $this->fetch_url("/api/rest/formations/" . $ifc . "?full-details=1");
+    }
+
+
 }

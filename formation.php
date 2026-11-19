@@ -22,6 +22,12 @@ if (!isset($_GET["formationId"])) {
 </head>
 <body>
     <h1>Formation</h1>
+    <?php 
     
+    $formation = $administrer->getFormationById($_GET["formationId"]);
+    echo "<p>mention : " . $formation["mention"] . "</p>";
+    echo "<p>parcours : " . $formation["parcours"] . "</p>";
+    var_dump($formation);
+    ?>
 </body>
 </html>
