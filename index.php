@@ -26,15 +26,12 @@ $administrer = new Administrer(MYHOST, MYDB, MYUSER, MYPASS);
     <div>
         <?php
 
-        $liste_mentions = $administrer->getListeMentions();
+        $liste = [];
+        $liste_mentions = $administrer->getListeFormationsDuSecteurDisciplinaire();
         foreach ($liste_mentions as $mention) {
-            echo "<p>" . $mention["nom"] . "</p> <br>";
+            echo "<p>" . $mention["parcours"] . "</p> <br>";
         }
 
-        $liste_etablissements = $administrer->getListeEtablissements();
-        foreach ($liste_etablissements as $etablissements) {
-            echo "<p>" . $etablissements["nom"] . "</p> <br>";
-        }
 
         ?>
     </div>

@@ -99,4 +99,8 @@ class Administrer
 	public function getListeEtablissements () {
 		return $this->fetch_url("/api/rest/etablissements");
 	}
+
+    public function getListeFormationsDuSecteurDisciplinaire() {
+        return $this->fetch_url("/api/rest/formations?sdid=2");
+    }
 }
