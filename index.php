@@ -27,9 +27,11 @@ $administrer = new Administrer(MYHOST, MYDB, MYUSER, MYPASS);
         <?php
 
         $liste = [];
-        $liste_mentions = $administrer->getListeFormationsDuSecteurDisciplinaire();
-        foreach ($liste_mentions as $mention) {
-            echo "<p>" . $mention["parcours"] . "</p> <br>";
+        $liste_formations = $administrer->getListeFormationsDuSecteurDisciplinaire();
+        foreach ($liste_formations as $formation) {
+            $mention = $administrer->getMentionById($formation["mentionId"]);
+            echo "<p>" . $mention["nom"] . "</p>";
+            echo "<p>" . $formation["parcours"] . "</p> <br>";
         }
 
 

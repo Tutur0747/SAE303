@@ -12,6 +12,7 @@ declare(strict_types=1);
 class Administrer
 {
     private const URL_BASE = "https://la-lab4ce.univ-lemans.fr/masters-stats";
+    private $liste_mentions_memoire;
 
 	private $myHost;
 
@@ -39,6 +40,7 @@ class Administrer
 		$this->myDb = $myDb;
 		$this->myUser = $myUser;
 		$this->myPass = $myPass;
+        $this->liste_mentions_memoire = null;
 
 		$this->debug = true;
 	}
@@ -102,5 +104,19 @@ class Administrer
 
     public function getListeFormationsDuSecteurDisciplinaire() {
         return $this->fetch_url("/api/rest/formations?sdid=2");
+    }
+
+    public function getMentionById(int $idMention) {
+        if ($this->liste_mentions_memoire == null) {
+            $this->liste_mentions_memoire = $this->getListeMentions();
+        }
+        $liste_mentions = $this->liste_mentions_memoire;
+        
+        foreach ($liste_mentions as $mention) {
+            if ($mention["id"] == $idMention) {
+                return $mention;
+            }
+        }
+        return null;
     }
 }
