@@ -31,7 +31,8 @@ $administrer = new Administrer(MYHOST, MYDB, MYUSER, MYPASS);
         foreach ($liste_formations as $formation) {
             $mention = $administrer->getMentionById($formation["mentionId"]);
             echo "<p>" . $mention["nom"] . "</p>";
-            echo "<p>" . $formation["parcours"] . "</p> <br>";
+            echo "<p>" . $formation["parcours"] . "</p>";
+            echo '<a href="formation.php?formationId=' . $formation["ifc"] . '"> lien vers la formation </a> <br><br>';
         }
 
 
